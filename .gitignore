@@ -1,0 +1,65 @@
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.pyc
+*.log
+
+# ── Virtual Environment ───────────────────────────────────────
+venv/
+env/
+.env
+.venv/
+
+# ── Database — include the seeded vault for deployment ─────────
+# (ipts_vault.db is committed so a fresh clone is immediately runnable)
+*.sqlite3
+
+# ── ML Models — include pre-trained models for deployment ──────
+# (pkl/joblib/json files are committed so no retraining is needed on first run)
+# models/*.pkl   ← intentionally NOT ignored
+# models/*.joblib ← intentionally NOT ignored
+
+# ── Dataset (144MB — downloaded on first run) ─────────────────
+datasets/
+
+# ── Logs ──────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── Runtime directory (local execution only — all source mirrored to root) ──
+.runtime/
+
+# ── OS ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Node ──────────────────────────────────────────────────────
+node_modules/
+package-lock.json
+
+# ── Secrets / Certs ───────────────────────────────────────────
+*.pem
+*.key
+credentials.json
+
+# ── Jupyter ───────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Claude local session ──────────────────────────────────────
+.claude/
+
+# ── Docs generation scripts ───────────────────────────────────
+docs/generate_report.js
