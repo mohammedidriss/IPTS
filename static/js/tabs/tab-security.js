@@ -476,7 +476,7 @@ const _socApiAbuse = [
   { endpoint:'/api/auth/login',       ip:'45.155.205.233', hits:189, limit:5,   window:'5m',  blocked:true  },
   { endpoint:'/api/settlements',      ip:'103.21.244.0',   hits:92,  limit:100, window:'1h',  blocked:false },
   { endpoint:'/api/beneficiaries',    ip:'198.54.117.200', hits:67,  limit:50,  window:'15m', blocked:false },
-  { endpoint:'/api/defi/swap',        ip:'77.83.0.1',      hits:54,  limit:20,  window:'1h',  blocked:false },
+  { endpoint:'/api/payments/settle',        ip:'77.83.0.1',      hits:54,  limit:20,  window:'1h',  blocked:false },
   { endpoint:'/api/fraud/alerts',     ip:'89.248.165.22',  hits:41,  limit:30,  window:'1h',  blocked:false },
 ];
 

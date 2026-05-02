@@ -118,12 +118,12 @@ function updateHeaderInfo() {
 
 function configureUIForRole() {
   const tabAccess = {
-    admin:         ['dashboard', 'approvals', 'aiml', 'compliance', 'cases', 'security', 'cards', 'admin', 'ledger', 'aml', 'corridors', 'dsworkbench', 'graph', 'mlops', 'defi'],
+    admin:         ['dashboard', 'approvals', 'aiml', 'compliance', 'cases', 'security', 'cards', 'admin', 'ledger', 'aml', 'corridors', 'dsworkbench', 'graph', 'mlops'],
     compliance:    ['dashboard', 'approvals', 'aiml', 'compliance', 'cases', 'security', 'ledger', 'aml', 'graph'],
     operator:      ['dashboard', 'approvals', 'security', 'cards', 'ledger', 'corridors'],
     auditor:       ['dashboard', 'aiml', 'compliance', 'cases', 'ledger', 'aml', 'graph'],
     datascientist: ['dashboard', 'aiml', 'ledger', 'aml', 'dsworkbench', 'graph', 'mlops'],
-    client:        ['dashboard', 'beneficiaries', 'payments', 'security', 'cards', 'documents', 'spending360', 'defi'],
+    client:        ['dashboard', 'beneficiaries', 'payments', 'security', 'cards', 'documents', 'spending360'],
   };
 
   const allowed = tabAccess[ROLE] || null;
@@ -317,7 +317,6 @@ function switchTab(tab) {
   }
   if (tab === 'security') { loadSecurity(); }
   if (tab === 'documents') { loadDocuments(); initStatementMonthPicker(); }
-  if (tab === 'defi') { loadDefiTab(); }
 }
 
 // ============================================================
@@ -869,7 +868,7 @@ function renderSHAPChart(shapValues) {
 // ============================================================
 async function loadProofOfReserve() {
   try {
-    const data = await apiFetch('/api/defi/proof-of-reserve');
+    const data = await apiFetch('/api/compliance/proof-of-reserve');
     document.getElementById('porOffchain').textContent = '$' + Number(data.offchain_total).toLocaleString();
     document.getElementById('porOnchain').textContent = '$' + Number(data.onchain_total).toLocaleString();
     document.getElementById('porRatio').textContent = data.ratio.toFixed(4);

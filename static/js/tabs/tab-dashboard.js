@@ -179,7 +179,7 @@ async function loadAdminCommandCenter() {
 
     // Proof of Reserve card
     try {
-      const por = await apiFetch('/api/defi/proof-of-reserve');
+      const por = await apiFetch('/api/compliance/proof-of-reserve');
       const porRatio    = document.getElementById('accPorRatio');
       const porOffchain = document.getElementById('accPorOffchain');
       const porOnchain  = document.getElementById('accPorOnchain');
