@@ -437,15 +437,34 @@ async function loadModelMetrics() {
     const modelIcons = { isolation_forest: 'fa-tree', random_forest: 'fa-trees', xgboost: 'fa-rocket', autoencoder: 'fa-network-wired', sequence_detector: 'fa-wave-square' };
     const modelColors = { isolation_forest: 'accent', random_forest: 'blue-400', xgboost: 'purple-400', autoencoder: 'cyan-400', sequence_detector: 'orange-400' };
 
+    const fmt = (v) => (v == null) ? '—' : (v * 100).toFixed(1) + '%';
     container.innerHTML = Object.entries(data.models).map(([key, m]) => `
-      <div class="glass rounded-xl p-5">
+      <div class="glass rounded-xl p-4">
         <div class="flex items-center gap-2 mb-3">
           <i class="fas ${modelIcons[key] || 'fa-brain'} text-${modelColors[key] || 'accent'}"></i>
           <span class="text-sm font-semibold text-gray-800">${modelNames[key] || key}</span>
         </div>
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <div><span class="text-gray-500">Accuracy</span><p class="font-mono text-lg text-gray-800">${(m.accuracy * 100).toFixed(1)}%</p></div>
-          <div><span class="text-gray-500">F1 Score</span><p class="font-mono text-lg text-accent">${(m.f1 * 100).toFixed(1)}%</p></div>
+        <div class="space-y-1 text-xs">
+          <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">F1</span>
+            <span class="font-mono font-bold text-${modelColors[key] || 'accent'}">${fmt(m.f1)}</span>
+          </div>
+          <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">AUC</span>
+            <span class="font-mono font-bold text-gray-800">${fmt(m.auc)}</span>
+          </div>
+          <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">Precision</span>
+            <span class="font-mono font-bold text-gray-800">${fmt(m.precision)}</span>
+          </div>
+          <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">Recall</span>
+            <span class="font-mono font-bold text-gray-800">${fmt(m.recall)}</span>
+          </div>
+          <div class="flex justify-between items-center py-0.5">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">Accuracy</span>
+            <span class="font-mono font-bold text-gray-800">${fmt(m.accuracy)}</span>
+          </div>
         </div>
       </div>
     `).join('');
