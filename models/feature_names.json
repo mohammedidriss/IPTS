@@ -1,1 +1,18 @@
-["amount", "hour", "day_of_week", "freq_7d", "is_round", "country_risk", "sender_id", "receiver_id", "velocity_1h", "velocity_24h", "velocity_7d", "avg_tx_amount", "std_tx_amount", "amount_zscore", "unique_receivers_7d", "is_new_receiver"]
+[
+  "amount",
+  "hour",
+  "day_of_week",
+  "freq_7d",
+  "is_round",
+  "country_risk",
+  "sender_id",
+  "receiver_id",
+  "V1",
+  "V3",
+  "V4",
+  "V10",
+  "V12",
+  "V14",
+  "V17",
+  "V20"
+]

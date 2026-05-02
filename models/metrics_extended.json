@@ -1,16 +1,16 @@
 {
   "isolation_forest": {
-    "f1": 0.3417,
-    "accuracy": 0.9972,
-    "precision": 0.2887,
-    "recall": 0.4184,
-    "auc": 0.7083,
-    "tp": 41,
-    "fp": 101,
-    "fn": 57,
-    "tn": 56763,
+    "f1": 0.3223,
+    "accuracy": 0.9971,
+    "precision": 0.2708,
+    "recall": 0.398,
+    "auc": 0.6981,
+    "tp": 39,
+    "fp": 105,
+    "fn": 59,
+    "tn": 56759,
     "dataset": "ULB Credit Card Fraud (real)",
-    "trained_at": "2026-04-29 23:36:43"
+    "trained_at": "2026-05-02 13:42:41"
   },
   "random_forest": {
     "f1": 0.8177,
@@ -23,7 +23,7 @@
     "fn": 15,
     "tn": 56842,
     "dataset": "ULB Credit Card Fraud (real)",
-    "trained_at": "2026-04-29 23:37:05"
+    "trained_at": "2026-05-02 13:43:06"
   },
   "xgboost": {
     "f1": 0.7814,
@@ -36,20 +36,20 @@
     "fn": 14,
     "tn": 56831,
     "dataset": "ULB Credit Card Fraud (real)",
-    "trained_at": "2026-04-29 23:37:10"
+    "trained_at": "2026-05-02 13:43:10"
   },
   "autoencoder": {
-    "f1": 0.0568,
-    "accuracy": 0.9499,
-    "precision": 0.0294,
-    "recall": 0.8776,
-    "auc": 0.9138,
-    "tp": 86,
-    "fp": 2844,
-    "fn": 12,
-    "tn": 54020,
+    "f1": 0.2709,
+    "accuracy": 0.9943,
+    "precision": 0.1739,
+    "recall": 0.6122,
+    "auc": 0.8036,
+    "tp": 60,
+    "fp": 285,
+    "fn": 38,
+    "tn": 56579,
     "dataset": "ULB Credit Card Fraud (real)",
-    "trained_at": "2026-04-29 23:37:59"
+    "trained_at": "2026-05-02 13:44:09"
   },
   "sequence_detector": {
     "f1": 0.7179,
@@ -62,6 +62,6 @@
     "fn": 14,
     "tn": 56812,
     "dataset": "ULB Credit Card Fraud (real)",
-    "trained_at": "2026-04-29 23:38:02"
+    "trained_at": "2026-05-02 13:44:11"
   }
 }

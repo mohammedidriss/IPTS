@@ -9,11 +9,11 @@ let _dsExperiments = [];
 
 // Canonical 5-model ensemble — same names + measured metrics used across AI Engine, MLOps, DS Workbench
 const _dsModels = [
-  { id: 'random_forest',    name: 'Random Forest',     version: 'v3.2.1', accuracy: 99.94, f1: 0.818, auc: 0.923, precision: 0.791, recall: 0.847, status: 'production', last_trained: '2026-04-29', framework: 'Supervised — primary classifier' },
-  { id: 'xgboost',          name: 'XGBoost',           version: 'v3.0.4', accuracy: 99.92, f1: 0.781, auc: 0.928, precision: 0.718, recall: 0.857, status: 'production', last_trained: '2026-04-29', framework: 'Supervised — boosted classifier' },
-  { id: 'sequence_detector',name: 'Sequence Detector', version: 'v1.1.0', accuracy: 99.88, f1: 0.718, auc: 0.928, precision: 0.618, recall: 0.857, status: 'production', last_trained: '2026-04-29', framework: 'Supervised — temporal pattern analyzer' },
-  { id: 'autoencoder',      name: 'Autoencoder',       version: 'v2.0.1', accuracy: 94.99, f1: 0.057, auc: 0.914, precision: 0.029, recall: 0.878, status: 'production', last_trained: '2026-04-29', framework: 'Unsupervised — anomaly detector' },
-  { id: 'isolation_forest', name: 'Isolation Forest',  version: 'v1.4.0', accuracy: 99.72, f1: 0.342, auc: 0.708, precision: 0.289, recall: 0.418, status: 'staging',    last_trained: '2026-04-29', framework: 'Unsupervised — outlier detector' },
+  { id: 'random_forest',    name: 'Random Forest',     version: 'v3.2.1', accuracy: 99.94, f1: 0.818, auc: 0.923, precision: 0.791, recall: 0.847, status: 'production', last_trained: '2026-05-02', framework: 'Supervised — primary classifier' },
+  { id: 'xgboost',          name: 'XGBoost',           version: 'v3.0.4', accuracy: 99.92, f1: 0.781, auc: 0.928, precision: 0.718, recall: 0.857, status: 'production', last_trained: '2026-05-02', framework: 'Supervised — boosted classifier' },
+  { id: 'sequence_detector',name: 'Sequence Detector', version: 'v1.1.0', accuracy: 99.88, f1: 0.718, auc: 0.928, precision: 0.618, recall: 0.857, status: 'production', last_trained: '2026-05-02', framework: 'Supervised — temporal pattern analyzer' },
+  { id: 'autoencoder',      name: 'Autoencoder',       version: 'v2.1.0', accuracy: 99.43, f1: 0.271, auc: 0.804, precision: 0.174, recall: 0.612, status: 'production', last_trained: '2026-05-02', framework: 'Unsupervised — anomaly detector (tightened threshold)' },
+  { id: 'isolation_forest', name: 'Isolation Forest',  version: 'v1.5.0', accuracy: 99.71, f1: 0.322, auc: 0.698, precision: 0.271, recall: 0.398, status: 'staging',    last_trained: '2026-05-02', framework: 'Unsupervised — outlier detector (1000 trees)' },
 ];
 
 const _dsFeatures = [
@@ -149,11 +149,11 @@ function dsDeleteDataset(idx) {
 // ── Experiment Tracker ───────────────────────────────────────
 // Experiments reference the same 5 canonical models used across the platform
 const _dsDefaultExperiments = [
-  { id: 'EXP-042', model: 'Random Forest',     dataset: 'ulb_credit_card_2026.csv',     accuracy: 99.94, f1: 0.818, auc: 0.923, precision: 0.791, recall: 0.847, duration: '14m 32s', status: 'completed', date: '2026-04-29 23:37' },
-  { id: 'EXP-041', model: 'XGBoost',           dataset: 'ulb_credit_card_2026.csv',     accuracy: 99.92, f1: 0.781, auc: 0.928, precision: 0.718, recall: 0.857, duration: '9m 18s',  status: 'completed', date: '2026-04-29 23:37' },
-  { id: 'EXP-040', model: 'Sequence Detector', dataset: 'temporal_sequences_2026.csv',  accuracy: 99.88, f1: 0.718, auc: 0.928, precision: 0.618, recall: 0.857, duration: '6m 44s',  status: 'completed', date: '2026-04-29 23:38' },
-  { id: 'EXP-039', model: 'Autoencoder',       dataset: 'ulb_credit_card_2026.csv',     accuracy: 94.99, f1: 0.057, auc: 0.914, precision: 0.029, recall: 0.878, duration: '21m 07s', status: 'completed', date: '2026-04-29 23:37' },
-  { id: 'EXP-038', model: 'Isolation Forest',  dataset: 'ulb_credit_card_2026.csv',     accuracy: 99.72, f1: 0.342, auc: 0.708, precision: 0.289, recall: 0.418, duration: '33m 51s', status: 'completed', date: '2026-04-29 23:36' },
+  { id: 'EXP-046', model: 'Autoencoder',       dataset: 'ulb_credit_card_2026.csv',     accuracy: 99.43, f1: 0.271, auc: 0.804, precision: 0.174, recall: 0.612, duration: '76s',     status: 'completed', date: '2026-05-02 13:35', notes: 'Threshold tightened 95th→99.5th, larger architecture' },
+  { id: 'EXP-045', model: 'Isolation Forest',  dataset: 'ulb_credit_card_2026.csv',     accuracy: 99.71, f1: 0.322, auc: 0.698, precision: 0.271, recall: 0.398, duration: '11s',     status: 'completed', date: '2026-05-02 13:34', notes: 'n_estimators 200→1000' },
+  { id: 'EXP-042', model: 'Random Forest',     dataset: 'ulb_credit_card_2026.csv',     accuracy: 99.94, f1: 0.818, auc: 0.923, precision: 0.791, recall: 0.847, duration: '21s',     status: 'completed', date: '2026-05-02 13:35' },
+  { id: 'EXP-041', model: 'XGBoost',           dataset: 'ulb_credit_card_2026.csv',     accuracy: 99.92, f1: 0.781, auc: 0.928, precision: 0.718, recall: 0.857, duration: '4s',      status: 'completed', date: '2026-05-02 13:35' },
+  { id: 'EXP-040', model: 'Sequence Detector', dataset: 'temporal_sequences_2026.csv',  accuracy: 99.88, f1: 0.718, auc: 0.928, precision: 0.618, recall: 0.857, duration: '3s',      status: 'completed', date: '2026-05-02 13:36' },
 ];
 
 function renderDSExperiments() {
