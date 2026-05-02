@@ -8,12 +8,12 @@ let _dsDatasets = [];
 let _dsExperiments = [];
 
 const _dsModels = [
-  { id: 'fraud_v3',    name: 'Fraud Detection',      version: 'v3.2.1', accuracy: 94.7, f1: 0.921, auc: 0.978, status: 'production', last_trained: '2026-04-15', framework: 'XGBoost' },
-  { id: 'risk_v2',     name: 'Risk Scoring',          version: 'v2.5.0', accuracy: 91.3, f1: 0.893, auc: 0.961, status: 'production', last_trained: '2026-04-10', framework: 'LightGBM' },
-  { id: 'aml_v1',      name: 'AML Pattern Detector',  version: 'v1.8.3', accuracy: 88.9, f1: 0.874, auc: 0.943, status: 'production', last_trained: '2026-03-28', framework: 'Random Forest' },
-  { id: 'kyc_v2',      name: 'KYC Verification',      version: 'v2.1.0', accuracy: 96.2, f1: 0.948, auc: 0.991, status: 'production', last_trained: '2026-04-20', framework: 'CNN' },
-  { id: 'sanction_v1', name: 'Sanctions Screening',   version: 'v1.3.0', accuracy: 99.1, f1: 0.989, auc: 0.999, status: 'production', last_trained: '2026-04-01', framework: 'BERT NER' },
-  { id: 'velocity_v1', name: 'Velocity Anomaly',      version: 'v1.0.2', accuracy: 82.4, f1: 0.801, auc: 0.876, status: 'staging',    last_trained: '2026-04-25', framework: 'Isolation Forest' },
+  { id: 'fraud_v3',    name: 'Fraud Detection',      version: 'v3.2.1', accuracy: 94.7, f1: 0.921, auc: 0.978, precision: 0.913, recall: 0.929, status: 'production', last_trained: '2026-04-15', framework: 'XGBoost' },
+  { id: 'risk_v2',     name: 'Risk Scoring',          version: 'v2.5.0', accuracy: 91.3, f1: 0.893, auc: 0.961, precision: 0.881, recall: 0.906, status: 'production', last_trained: '2026-04-10', framework: 'LightGBM' },
+  { id: 'aml_v1',      name: 'AML Pattern Detector',  version: 'v1.8.3', accuracy: 88.9, f1: 0.874, auc: 0.943, precision: 0.857, recall: 0.892, status: 'production', last_trained: '2026-03-28', framework: 'Random Forest' },
+  { id: 'kyc_v2',      name: 'KYC Verification',      version: 'v2.1.0', accuracy: 96.2, f1: 0.948, auc: 0.991, precision: 0.939, recall: 0.957, status: 'production', last_trained: '2026-04-20', framework: 'CNN' },
+  { id: 'sanction_v1', name: 'Sanctions Screening',   version: 'v1.3.0', accuracy: 99.1, f1: 0.989, auc: 0.999, precision: 0.985, recall: 0.993, status: 'production', last_trained: '2026-04-01', framework: 'BERT NER' },
+  { id: 'velocity_v1', name: 'Velocity Anomaly',      version: 'v1.0.2', accuracy: 82.4, f1: 0.801, auc: 0.876, precision: 0.778, recall: 0.825, status: 'staging',    last_trained: '2026-04-25', framework: 'Isolation Forest' },
 ];
 
 const _dsFeatures = [
@@ -59,6 +59,7 @@ function renderModelRegistry() {
   };
   tbody.innerHTML = _dsModels.map(m => {
     const accColor = m.accuracy >= 95 ? 'text-green-600' : m.accuracy >= 90 ? 'text-blue-600' : m.accuracy >= 85 ? 'text-yellow-600' : 'text-red-500';
+    const f1Color  = m.f1 >= 0.95 ? 'text-green-600' : m.f1 >= 0.90 ? 'text-blue-600' : m.f1 >= 0.85 ? 'text-yellow-600' : 'text-red-500';
     const stc = statusCls[m.status] || 'bg-gray-100 text-gray-500';
     return `<tr class="border-b border-gray-100 hover:bg-blue-50/30 transition">
       <td class="py-2.5 px-3">
@@ -66,9 +67,11 @@ function renderModelRegistry() {
         <p class="text-[10px] text-gray-400">${m.framework}</p>
       </td>
       <td class="py-2.5 px-3 text-xs text-gray-500 font-mono">${m.version}</td>
-      <td class="py-2.5 px-3 text-xs font-bold ${accColor}">${m.accuracy}%</td>
-      <td class="py-2.5 px-3 text-xs text-gray-600">${m.f1.toFixed(3)}</td>
+      <td class="py-2.5 px-3 text-xs font-bold ${f1Color}">${m.f1.toFixed(3)}</td>
       <td class="py-2.5 px-3 text-xs text-gray-600">${m.auc.toFixed(3)}</td>
+      <td class="py-2.5 px-3 text-xs text-gray-600">${(m.precision != null) ? m.precision.toFixed(3) : '—'}</td>
+      <td class="py-2.5 px-3 text-xs text-gray-600">${(m.recall    != null) ? m.recall.toFixed(3)    : '—'}</td>
+      <td class="py-2.5 px-3 text-xs font-bold ${accColor}">${m.accuracy}%</td>
       <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${stc}">${m.status}</span></td>
       <td class="py-2.5 px-3 text-[10px] text-gray-400">${m.last_trained}</td>
       <td class="py-2.5 px-3">
@@ -145,11 +148,11 @@ function dsDeleteDataset(idx) {
 
 // ── Experiment Tracker ───────────────────────────────────────
 const _dsDefaultExperiments = [
-  { id: 'EXP-042', model: 'Fraud Detection',     dataset: 'transactions_q1_2026.csv', accuracy: 94.7, f1: 0.921, duration: '14m 32s', status: 'completed', date: '2026-04-15 10:22' },
-  { id: 'EXP-041', model: 'Risk Scoring',         dataset: 'aml_labeled_2025.csv',     accuracy: 91.3, f1: 0.893, duration: '9m 18s',  status: 'completed', date: '2026-04-10 15:41' },
-  { id: 'EXP-040', model: 'Velocity Anomaly',     dataset: 'transactions_q1_2026.csv', accuracy: 82.4, f1: 0.801, duration: '6m 44s',  status: 'completed', date: '2026-04-25 09:05' },
-  { id: 'EXP-039', model: 'AML Pattern Detector', dataset: 'aml_labeled_2025.csv',     accuracy: 88.9, f1: 0.874, duration: '21m 07s', status: 'completed', date: '2026-03-28 14:17' },
-  { id: 'EXP-038', model: 'KYC Verification',     dataset: 'kyc_documents_v2.csv',     accuracy: 96.2, f1: 0.948, duration: '33m 51s', status: 'completed', date: '2026-04-20 11:30' },
+  { id: 'EXP-042', model: 'Fraud Detection',     dataset: 'transactions_q1_2026.csv', accuracy: 94.7, f1: 0.921, auc: 0.978, precision: 0.913, recall: 0.929, duration: '14m 32s', status: 'completed', date: '2026-04-15 10:22' },
+  { id: 'EXP-041', model: 'Risk Scoring',         dataset: 'aml_labeled_2025.csv',     accuracy: 91.3, f1: 0.893, auc: 0.961, precision: 0.881, recall: 0.906, duration: '9m 18s',  status: 'completed', date: '2026-04-10 15:41' },
+  { id: 'EXP-040', model: 'Velocity Anomaly',     dataset: 'transactions_q1_2026.csv', accuracy: 82.4, f1: 0.801, auc: 0.876, precision: 0.778, recall: 0.825, duration: '6m 44s',  status: 'completed', date: '2026-04-25 09:05' },
+  { id: 'EXP-039', model: 'AML Pattern Detector', dataset: 'aml_labeled_2025.csv',     accuracy: 88.9, f1: 0.874, auc: 0.943, precision: 0.857, recall: 0.892, duration: '21m 07s', status: 'completed', date: '2026-03-28 14:17' },
+  { id: 'EXP-038', model: 'KYC Verification',     dataset: 'kyc_documents_v2.csv',     accuracy: 96.2, f1: 0.948, auc: 0.991, precision: 0.939, recall: 0.957, duration: '33m 51s', status: 'completed', date: '2026-04-20 11:30' },
 ];
 
 function renderDSExperiments() {
@@ -159,12 +162,16 @@ function renderDSExperiments() {
   const stc = { completed: 'bg-green-100 text-green-600', running: 'bg-blue-100 text-blue-600', failed: 'bg-red-100 text-red-500' };
   tbody.innerHTML = exps.map(e => {
     const accColor = e.accuracy >= 94 ? 'text-green-600' : e.accuracy >= 90 ? 'text-blue-600' : 'text-yellow-600';
+    const f1Color  = e.f1 >= 0.94 ? 'text-green-600' : e.f1 >= 0.88 ? 'text-blue-600' : 'text-yellow-600';
     return `<tr class="border-b border-gray-100 hover:bg-purple-50/20 transition">
       <td class="py-2 px-3 font-mono text-[10px] text-gray-400">${e.id}</td>
       <td class="py-2 px-3 text-xs font-medium text-gray-800">${e.model}</td>
       <td class="py-2 px-3 text-[10px] text-gray-500 truncate max-w-[130px]">${e.dataset}</td>
+      <td class="py-2 px-3 text-xs font-bold ${f1Color}">${(typeof e.f1 === 'number') ? e.f1.toFixed(3) : e.f1}</td>
+      <td class="py-2 px-3 text-xs text-gray-600">${(e.auc != null) ? e.auc.toFixed(3) : '—'}</td>
+      <td class="py-2 px-3 text-xs text-gray-600">${(e.precision != null) ? e.precision.toFixed(3) : '—'}</td>
+      <td class="py-2 px-3 text-xs text-gray-600">${(e.recall != null) ? e.recall.toFixed(3) : '—'}</td>
       <td class="py-2 px-3 text-xs font-bold ${accColor}">${e.accuracy}%</td>
-      <td class="py-2 px-3 text-xs text-gray-600">${e.f1}</td>
       <td class="py-2 px-3 text-[10px] text-gray-400">${e.duration}</td>
       <td class="py-2 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${stc[e.status] || ''}">${e.status}</span></td>
       <td class="py-2 px-3 text-[10px] text-gray-400">${e.date}</td>

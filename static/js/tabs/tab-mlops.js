@@ -1,6 +1,52 @@
 // ============================================================
 // MLOps Tab
 // ============================================================
+
+// Shared card renderer — shows all 5 metrics: F1, AUC, Precision, Recall, Accuracy
+function renderMLOpsCard(key, m, modelNames, modelIcons, modelColors, modelDesc) {
+  const fmt = (v) => (v == null) ? '—' : (v * 100).toFixed(1) + '%';
+  const colorClass = modelColors[key] || 'text-accent';
+  const headlineMetric = (m.f1 != null) ? m.f1 : (m.accuracy || 0);
+
+  return `
+    <div class="glass rounded-xl p-5 border border-white/5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+          <i class="fas ${modelIcons[key] || 'fa-brain'} ${colorClass}"></i>
+        </div>
+        <div>
+          <div class="text-sm font-semibold text-gray-800">${modelNames[key] || key}</div>
+          <div class="text-xs text-gray-500">${modelDesc[key] || ''}</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-5 gap-1.5 mb-3">
+        <div class="bg-gray-50 rounded-lg p-2 text-center">
+          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">F1</div>
+          <div class="text-sm font-mono font-bold ${colorClass}">${fmt(m.f1)}</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-2 text-center">
+          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">AUC</div>
+          <div class="text-sm font-mono font-bold text-gray-800">${fmt(m.auc)}</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-2 text-center">
+          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">Prec</div>
+          <div class="text-sm font-mono font-bold text-gray-800">${fmt(m.precision)}</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-2 text-center">
+          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">Recall</div>
+          <div class="text-sm font-mono font-bold text-gray-800">${fmt(m.recall)}</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-2 text-center">
+          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">Acc</div>
+          <div class="text-sm font-mono font-bold text-gray-800">${fmt(m.accuracy)}</div>
+        </div>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-1.5">
+        <div class="h-1.5 rounded-full bg-gradient-to-r from-accent to-purple-500" style="width:${(headlineMetric*100).toFixed(0)}%"></div>
+      </div>
+    </div>`;
+}
+
 async function loadMLOps() {
   try {
     const data = await apiFetch('/api/models/metrics');
@@ -17,32 +63,7 @@ async function loadMLOps() {
 
     const grid = document.getElementById('mlops-model-grid');
     const entries = Object.entries(data.models).filter(([k]) => modelNames[k]);
-    grid.innerHTML = entries.map(([key, m]) => `
-      <div class="glass rounded-xl p-5 border border-white/5">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-            <i class="fas ${modelIcons[key] || 'fa-brain'} ${modelColors[key] || 'text-accent'}"></i>
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-gray-800">${modelNames[key] || key}</div>
-            <div class="text-xs text-gray-500">${modelDesc[key] || ''}</div>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3 mb-3">
-          <div class="bg-gray-50 rounded-lg p-3 text-center">
-            <div class="text-xs text-gray-500 mb-1">Accuracy</div>
-            <div class="text-xl font-mono font-bold text-gray-800">${(m.accuracy * 100).toFixed(1)}%</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-3 text-center">
-            <div class="text-xs text-gray-500 mb-1">F1 Score</div>
-            <div class="text-xl font-mono font-bold ${modelColors[key] || 'text-accent'}">${(m.f1 * 100).toFixed(1)}%</div>
-          </div>
-        </div>
-        <div class="w-full bg-gray-700 rounded-full h-1.5">
-          <div class="h-1.5 rounded-full bg-gradient-to-r from-accent to-purple-500" style="width:${(m.accuracy*100).toFixed(0)}%"></div>
-        </div>
-      </div>
-    `).join('');
+    grid.innerHTML = entries.map(([key, m]) => renderMLOpsCard(key, m, modelNames, modelIcons, modelColors, modelDesc)).join('');
 
     try {
       const ins = await apiFetch('/api/models/insights');
@@ -125,32 +146,7 @@ async function refreshMLOpsMetrics() {
     const modelColors = { isolation_forest: 'text-green-600', random_forest: 'text-blue-500', xgboost: 'text-purple-500', autoencoder: 'text-cyan-600', sequence_detector: 'text-orange-500' };
     const modelDesc = { isolation_forest: 'n_estimators=100, contamination=0.05', random_forest: 'n_estimators=150, max_depth=12, balanced', xgboost: 'n_estimators=200, max_depth=6, lr=0.05', autoencoder: 'MLP 64→32→16→32→64, relu, max_iter=200', sequence_detector: 'SGD modified_huber, online mini-batch' };
     const entries = Object.entries(data.models).filter(([k]) => modelNames[k]);
-    grid.innerHTML = entries.map(([key, m]) => `
-      <div class="glass rounded-xl p-5 border border-white/5">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-            <i class="fas ${modelIcons[key] || 'fa-brain'} ${modelColors[key] || 'text-accent'}"></i>
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-gray-800">${modelNames[key] || key}</div>
-            <div class="text-xs text-gray-500">${modelDesc[key] || ''}</div>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3 mb-3">
-          <div class="bg-gray-50 rounded-lg p-3 text-center">
-            <div class="text-xs text-gray-500 mb-1">Accuracy</div>
-            <div class="text-xl font-mono font-bold text-gray-800">${(m.accuracy * 100).toFixed(1)}%</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-3 text-center">
-            <div class="text-xs text-gray-500 mb-1">F1 Score</div>
-            <div class="text-xl font-mono font-bold ${modelColors[key] || 'text-accent'}">${(m.f1 * 100).toFixed(1)}%</div>
-          </div>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-1.5">
-          <div class="h-1.5 rounded-full bg-gradient-to-r from-accent to-purple-500" style="width:${(m.accuracy*100).toFixed(0)}%"></div>
-        </div>
-      </div>
-    `).join('');
+    grid.innerHTML = entries.map(([key, m]) => renderMLOpsCard(key, m, modelNames, modelIcons, modelColors, modelDesc)).join('');
   } catch(e) {
     grid.innerHTML = '<div class="col-span-5 text-center text-red-400 text-sm py-6">Failed to load metrics.</div>';
   }

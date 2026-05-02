@@ -3457,8 +3457,21 @@ def network_graph():
 @zero_trust_required
 def model_metrics():
     try:
+        # Load base metrics (f1, accuracy)
         with open(os.path.join(MODELS_DIR, "metrics.json")) as f:
             metrics = json.load(f)
+        # Merge extended metrics (precision, recall, auc, tp/fp/fn/tn, dataset, trained_at)
+        try:
+            with open(os.path.join(MODELS_DIR, "metrics_extended.json")) as f:
+                extended = json.load(f)
+            for model_key, ext in extended.items():
+                if model_key in metrics:
+                    # Extended metrics take precedence (newer training run)
+                    metrics[model_key].update(ext)
+                else:
+                    metrics[model_key] = ext
+        except FileNotFoundError:
+            pass
         with open(os.path.join(MODELS_DIR, "feature_importance.json")) as f:
             feat_imp = json.load(f)
         return jsonify({
