@@ -12,8 +12,8 @@
     "accuracy": 0.9992
   },
   "autoencoder": {
-    "f1": 0.2709,
-    "accuracy": 0.9943
+    "f1": 0.3252,
+    "accuracy": 0.9956
   },
   "sequence_detector": {
     "f1": 0.7179,

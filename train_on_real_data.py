@@ -195,45 +195,71 @@ def train_models(X_tr, X_te, y_tr, y_te):
 
     # ── Autoencoder (MLP reconstruction) ─────────────────────────────────────
     # Improvements:
-    #   1. Larger architecture (64→32→16→32→64 vs 32→16→8→16→32) for richer representation
-    #   2. More training iterations (300 vs 100) with early stopping
-    #   3. Threshold tightened from 95th → 99.5th percentile of normal samples
-    #      → flags only 0.5% of normals (vs 5%) → 10× precision improvement
+    #   1. Larger architecture (64→32→16→32→64) for richer representation
+    #   2. More training iterations (300) with early stopping
+    #   3. THRESHOLD OPTIMIZATION via F1-maximization on held-out calibration set
+    #      (instead of fixed percentile — finds the genuinely optimal cutoff)
     print("    → Autoencoder (reconstruction error on normal txns)...")
     t0 = time.time()
     scaler = StandardScaler()
-    X_norm_tr = scaler.fit_transform(X_tr[y_tr == 0])
+
+    # Split TRAIN: hold out 10% normal + ALL fraud as calibration set
+    # The remaining 90% normal trains the autoencoder.
+    # The calibration set picks the F1-optimal threshold.
+    rng = np.random.default_rng(42)
+    train_normal_idx = np.where(y_tr == 0)[0]
+    train_fraud_idx  = np.where(y_tr == 1)[0]
+    calib_normal_n   = max(int(len(train_normal_idx) * 0.10), 5000)
+    calib_normal_idx = rng.choice(train_normal_idx, size=calib_normal_n, replace=False)
+    pure_train_idx   = np.setdiff1d(train_normal_idx, calib_normal_idx)
+    calib_idx        = np.concatenate([calib_normal_idx, train_fraud_idx])
+    rng.shuffle(calib_idx)
+
+    X_norm_tr = scaler.fit_transform(X_tr[pure_train_idx])
+    X_calib   = scaler.transform(X_tr[calib_idx])
+    y_calib   = y_tr[calib_idx] if hasattr(y_tr, '__getitem__') else y_tr.iloc[calib_idx]
     X_norm_te = scaler.transform(X_te)
 
     ae = MLPRegressor(
-        hidden_layer_sizes=(64, 32, 16, 32, 64),  # was (32, 16, 8, 16, 32) — 2× capacity
+        hidden_layer_sizes=(64, 32, 16, 32, 64),
         activation='relu',
-        max_iter=300,                              # was 100 — more training
+        max_iter=300,
         learning_rate_init=0.001,
         random_state=42,
         verbose=False,
         early_stopping=True,
         validation_fraction=0.1,
-        n_iter_no_change=15                        # was 10 — more patience
+        n_iter_no_change=15
     )
     ae.fit(X_norm_tr, X_norm_tr)
 
-    # Reconstruction error threshold: 99.5th percentile on normal test samples
-    # (was 95th — flagged 5% of normals as fraud, killing precision)
-    X_norm_te_normal = X_norm_te[y_te == 0]
-    recon_normal = ae.predict(X_norm_te_normal)
-    errors_normal = np.mean((X_norm_te_normal - recon_normal) ** 2, axis=1)
-    threshold = float(np.percentile(errors_normal, 99.5))
+    # Reconstruction errors on calibration set
+    recon_calib = ae.predict(X_calib)
+    errors_calib = np.mean((X_calib - recon_calib) ** 2, axis=1)
 
+    # Find F1-optimal threshold via fine-grained percentile sweep on calibration NORMALS
+    errors_calib_normals = errors_calib[np.asarray(y_calib) == 0]
+    best_f1, best_threshold, best_pct = 0.0, None, None
+    for pct in np.arange(95.0, 99.95, 0.05):
+        thresh = float(np.percentile(errors_calib_normals, pct))
+        preds_cal = (errors_calib > thresh).astype(int)
+        f1_cal = f1_score(np.asarray(y_calib), preds_cal, zero_division=0)
+        if f1_cal > best_f1:
+            best_f1, best_threshold, best_pct = f1_cal, thresh, pct
+
+    print(f"      Optimal threshold: {best_pct:.2f}th percentile (calibration F1={best_f1:.4f})")
+
+    # Apply optimal threshold to TEST set
     recon_all = ae.predict(X_norm_te)
     errors_all = np.mean((X_norm_te - recon_all) ** 2, axis=1)
-    ae_preds = (errors_all > threshold).astype(int)
+    ae_preds = (errors_all > best_threshold).astype(int)
     metrics['autoencoder'] = _score(y_te, ae_preds, "Autoencoder", time.time()-t0)
 
     # Save scaler alongside autoencoder for inference
-    joblib.dump({'model': ae, 'scaler': scaler, 'threshold': threshold},
+    joblib.dump({'model': ae, 'scaler': scaler, 'threshold': best_threshold,
+                 'optimal_percentile': best_pct},
                 os.path.join(MODELS_DIR, "autoencoder.pkl"))
-    joblib.dump(threshold, os.path.join(MODELS_DIR, "ae_threshold.pkl"))
+    joblib.dump(best_threshold, os.path.join(MODELS_DIR, "ae_threshold.pkl"))
 
     # ── Sequence Detector (XGBoost on velocity features) ─────────────────────
     print("    → Sequence Detector (velocity + temporal features)...")
