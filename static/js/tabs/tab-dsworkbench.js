@@ -8,12 +8,13 @@ let _dsDatasets = [];
 let _dsExperiments = [];
 
 // Canonical 5-model ensemble — same names + measured metrics used across AI Engine, MLOps, DS Workbench
+// Confusion matrix counts (TP/FP/FN/TN) come from the latest training run on the test set
 const _dsModels = [
-  { id: 'random_forest',    name: 'Random Forest',     version: 'v3.2.1', accuracy: 99.94, f1: 0.818, auc: 0.923, precision: 0.791, recall: 0.847, status: 'production', last_trained: '2026-05-02', framework: 'Supervised — primary classifier' },
-  { id: 'xgboost',          name: 'XGBoost',           version: 'v3.0.4', accuracy: 99.92, f1: 0.781, auc: 0.928, precision: 0.718, recall: 0.857, status: 'production', last_trained: '2026-05-02', framework: 'Supervised — boosted classifier' },
-  { id: 'sequence_detector',name: 'Sequence Detector', version: 'v1.1.0', accuracy: 99.88, f1: 0.718, auc: 0.928, precision: 0.618, recall: 0.857, status: 'production', last_trained: '2026-05-02', framework: 'Supervised — temporal pattern analyzer' },
-  { id: 'autoencoder',      name: 'Autoencoder',       version: 'v2.2.0', accuracy: 99.56, f1: 0.325, auc: 0.804, precision: 0.221, recall: 0.612, status: 'production', last_trained: '2026-05-02', framework: 'Unsupervised — anomaly detector (F1-optimized threshold)' },
-  { id: 'isolation_forest', name: 'Isolation Forest',  version: 'v1.5.0', accuracy: 99.71, f1: 0.322, auc: 0.698, precision: 0.271, recall: 0.398, status: 'staging',    last_trained: '2026-05-02', framework: 'Unsupervised — outlier detector (1000 trees)' },
+  { id: 'random_forest',    name: 'Random Forest',     version: 'v3.2.1', accuracy: 99.94, f1: 0.818, auc: 0.923, precision: 0.791, recall: 0.847, tp: 83, fp: 22,  fn: 15, tn: 56842, dataset: 'ULB Credit Card Fraud (real)', status: 'production', last_trained: '2026-05-02', framework: 'Supervised — primary classifier', hyperparams: 'n_estimators=300, max_depth=16, balanced' },
+  { id: 'xgboost',          name: 'XGBoost',           version: 'v3.0.4', accuracy: 99.92, f1: 0.781, auc: 0.928, precision: 0.718, recall: 0.857, tp: 84, fp: 33,  fn: 14, tn: 56831, dataset: 'ULB Credit Card Fraud (real)', status: 'production', last_trained: '2026-05-02', framework: 'Supervised — boosted classifier', hyperparams: 'n_estimators=400, max_depth=7, lr=0.03' },
+  { id: 'sequence_detector',name: 'Sequence Detector', version: 'v1.1.0', accuracy: 99.88, f1: 0.718, auc: 0.928, precision: 0.618, recall: 0.857, tp: 84, fp: 52,  fn: 14, tn: 56812, dataset: 'ULB Credit Card Fraud (real)', status: 'production', last_trained: '2026-05-02', framework: 'Supervised — temporal pattern analyzer', hyperparams: 'XGB on velocity features, n_estimators=300' },
+  { id: 'autoencoder',      name: 'Autoencoder',       version: 'v2.2.0', accuracy: 99.56, f1: 0.325, auc: 0.804, precision: 0.221, recall: 0.612, tp: 60, fp: 211, fn: 38, tn: 56653, dataset: 'ULB Credit Card Fraud (real)', status: 'production', last_trained: '2026-05-02', framework: 'Unsupervised — anomaly detector (F1-optimized threshold)', hyperparams: 'MLP 64→32→16→32→64, threshold @ 99.6th percentile' },
+  { id: 'isolation_forest', name: 'Isolation Forest',  version: 'v1.5.0', accuracy: 99.71, f1: 0.322, auc: 0.698, precision: 0.271, recall: 0.398, tp: 39, fp: 105, fn: 59, tn: 56759, dataset: 'ULB Credit Card Fraud (real)', status: 'staging',    last_trained: '2026-05-02', framework: 'Unsupervised — outlier detector', hyperparams: 'n_estimators=1000, contamination=0.00173' },
 ];
 
 const _dsFeatures = [
@@ -32,11 +33,124 @@ const _dsFeatures = [
 // ── Main loader ──────────────────────────────────────────────
 async function loadDSWorkbench() {
   renderDSKPIs();
+  renderDSCards();
   renderModelRegistry();
   renderDSDatasets();
   renderDSExperiments();
   renderDSDriftChart();
   renderDSFeatureChart();
+}
+
+// ── Rich Model Cards (matches AI Engine + MLOps style) ──────
+const _dsModelIcons = {
+  random_forest:    'fa-trees',
+  xgboost:          'fa-rocket',
+  sequence_detector:'fa-wave-square',
+  autoencoder:      'fa-network-wired',
+  isolation_forest: 'fa-tree',
+};
+const _dsModelColors = {
+  random_forest:    'text-blue-500',
+  xgboost:          'text-purple-500',
+  sequence_detector:'text-orange-500',
+  autoencoder:      'text-cyan-600',
+  isolation_forest: 'text-green-600',
+};
+
+function renderDSCards() {
+  const container = document.getElementById('dsModelCards');
+  if (!container) return;
+  const fmt = (v) => (v == null) ? '—' : (v * 100).toFixed(1) + '%';
+
+  container.innerHTML = _dsModels.map(m => {
+    const colorClass  = _dsModelColors[m.id] || 'text-accent';
+    const iconClass   = _dsModelIcons[m.id]  || 'fa-brain';
+    const headline    = (m.f1 != null) ? m.f1 : (m.accuracy / 100);
+    const tp = m.tp != null ? m.tp.toLocaleString() : '—';
+    const fp = m.fp != null ? m.fp.toLocaleString() : '—';
+    const fn = m.fn != null ? m.fn.toLocaleString() : '—';
+    const tn = m.tn != null ? m.tn.toLocaleString() : '—';
+    const statusBadge = {
+      production: 'bg-green-100 text-green-700',
+      staging:    'bg-yellow-100 text-yellow-700',
+      archived:   'bg-gray-100 text-gray-500',
+    }[m.status] || 'bg-gray-100 text-gray-500';
+
+    return `
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition">
+        <!-- Header line 1: icon + name + status badge -->
+        <div class="flex items-center gap-2 mb-1">
+          <div class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+            <i class="fas ${iconClass} ${colorClass}"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-800 truncate flex-1">${m.name}</span>
+          <span class="px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${statusBadge} shrink-0">${m.status}</span>
+        </div>
+
+        <!-- Header line 2: version + framework label -->
+        <div class="flex items-center gap-2 mb-2 ml-11">
+          <span class="font-mono text-[10px] text-gray-400">${m.version}</span>
+          <span class="text-[10px] text-gray-500 truncate" title="${m.framework || ''}">·  ${m.framework || ''}</span>
+        </div>
+
+        <!-- Hyperparameters -->
+        <div class="text-[10px] text-gray-400 font-mono mb-3 truncate" title="${m.hyperparams || ''}"><i class="fas fa-sliders mr-1"></i>${m.hyperparams || ''}</div>
+
+        <!-- Performance metrics — vertical rows -->
+        <div class="space-y-1 text-xs mb-3">
+          <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">F1</span>
+            <span class="font-mono font-bold ${colorClass}">${fmt(m.f1)}</span>
+          </div>
+          <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">AUC</span>
+            <span class="font-mono font-bold text-gray-800">${fmt(m.auc)}</span>
+          </div>
+          <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">Precision</span>
+            <span class="font-mono font-bold text-gray-800">${fmt(m.precision)}</span>
+          </div>
+          <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">Recall</span>
+            <span class="font-mono font-bold text-gray-800">${fmt(m.recall)}</span>
+          </div>
+          <div class="flex justify-between items-center py-0.5">
+            <span class="text-gray-500 uppercase tracking-wide text-[10px]">Accuracy</span>
+            <span class="font-mono font-bold text-gray-800">${(m.accuracy != null) ? m.accuracy.toFixed(2) + '%' : '—'}</span>
+          </div>
+        </div>
+
+        <!-- Confusion matrix -->
+        <div class="bg-gray-50 rounded-lg p-2 mb-3">
+          <div class="text-[9px] text-gray-500 uppercase tracking-wide mb-1 text-center">Confusion Matrix (test set)</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] font-mono">
+            <div class="text-center"><div class="text-green-600 font-bold">${tp}</div><div class="text-gray-400 text-[9px]">TP</div></div>
+            <div class="text-center"><div class="text-red-500 font-bold">${fp}</div><div class="text-gray-400 text-[9px]">FP</div></div>
+            <div class="text-center"><div class="text-orange-500 font-bold">${fn}</div><div class="text-gray-400 text-[9px]">FN</div></div>
+            <div class="text-center"><div class="text-gray-700 font-bold">${tn}</div><div class="text-gray-400 text-[9px]">TN</div></div>
+          </div>
+        </div>
+
+        <!-- Footer: dataset + last trained -->
+        <div class="flex items-center justify-between text-[9px] text-gray-400 mb-2">
+          <span class="truncate" title="${m.dataset || ''}"><i class="fas fa-database mr-1"></i>${(m.dataset || '').replace('ULB Credit Card Fraud (real)', 'ULB Real')}</span>
+          <span><i class="fas fa-clock mr-1"></i>${m.last_trained || '—'}</span>
+        </div>
+
+        <!-- Performance bar -->
+        <div class="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+          <div class="h-1.5 rounded-full bg-gradient-to-r from-accent to-purple-500" style="width:${(headline*100).toFixed(0)}%"></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex gap-1.5">
+          <button onclick="dsRetrainModel('${m.id}')" class="flex-1 px-2 py-1 text-[10px] font-semibold rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition"><i class="fas fa-rotate-right mr-0.5"></i>Retrain</button>
+          ${m.status === 'staging' ? `<button onclick="dsPromoteModel('${m.id}')" class="flex-1 px-2 py-1 text-[10px] font-semibold rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition"><i class="fas fa-rocket mr-0.5"></i>Promote</button>` : ''}
+          <button onclick="dsArchiveModel('${m.id}')" class="px-2 py-1 text-[10px] font-semibold rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition"><i class="fas fa-box-archive"></i></button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ── KPIs ─────────────────────────────────────────────────────

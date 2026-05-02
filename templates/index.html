@@ -2909,6 +2909,16 @@ tailwind.config = {
 
     <!-- Model Registry Pane -->
     <div id="dsPane-models" class="ds-tab-pane">
+      <!-- Rich card grid (matches AI Engine + MLOps style with confusion matrix detail) -->
+      <div class="mb-6">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3"><i class="fas fa-cubes mr-1.5 text-accent"></i>Production Models — Detailed View</h3>
+        <div id="dsModelCards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4"></div>
+      </div>
+
+      <!-- Compact table view (sortable, scannable) -->
+      <div class="mb-2">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3"><i class="fas fa-table mr-1.5 text-accent"></i>Compact Table View</h3>
+      </div>
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table class="w-full text-sm">
           <thead><tr class="border-b border-gray-100 text-gray-400 text-xs uppercase">
@@ -4673,7 +4683,7 @@ async function renderCorridorMap_legacy() {
   <script src="/static/js/tabs/tab-payments.js?v=5"></script>
   <script src="/static/js/tabs/tab-approvals.js?v=5"></script>
   <script src="/static/js/tabs/tab-aiml.js?v=10"></script>
-  <script src="/static/js/tabs/tab-mlops.js?v=7"></script>
+  <script src="/static/js/tabs/tab-mlops.js?v=8"></script>
   <script src="/static/js/tabs/tab-compliance.js?v=5"></script>
   <script src="/static/js/tabs/tab-cases.js?v=5"></script>
   <script src="/static/js/tabs/tab-admin.js?v=5"></script>
@@ -4684,7 +4694,7 @@ async function renderCorridorMap_legacy() {
   <script src="/static/js/tabs/tab-documents.js?v=4"></script>
   <script src="/static/js/tabs/tab-aml.js?v=5"></script>
   <script src="/static/js/tabs/tab-ledger.js?v=5"></script>
-  <script src="/static/js/tabs/tab-dsworkbench.js?v=9"></script>
+  <script src="/static/js/tabs/tab-dsworkbench.js?v=11"></script>
   <script src="/static/js/tabs/tab-defi.js?v=5"></script>
   <script src="/static/js/tabs/tab-operator.js?v=1"></script>
 

@@ -2,45 +2,87 @@
 // MLOps Tab
 // ============================================================
 
-// Shared card renderer — shows all 5 metrics: F1, AUC, Precision, Recall, Accuracy
+// Shared card renderer — vertical layout matching AI Engine + extra MLOps detail
 function renderMLOpsCard(key, m, modelNames, modelIcons, modelColors, modelDesc) {
   const fmt = (v) => (v == null) ? '—' : (v * 100).toFixed(1) + '%';
   const colorClass = modelColors[key] || 'text-accent';
   const headlineMetric = (m.f1 != null) ? m.f1 : (m.accuracy || 0);
 
+  // Confusion-matrix details
+  const tp = m.tp != null ? m.tp.toLocaleString() : '—';
+  const fp = m.fp != null ? m.fp.toLocaleString() : '—';
+  const fn = m.fn != null ? m.fn.toLocaleString() : '—';
+  const tn = m.tn != null ? m.tn.toLocaleString() : '—';
+  const dataset = m.dataset || 'ULB Credit Card Fraud';
+  const trained = m.trained_at ? m.trained_at.split(' ')[0] : '—';
+
   return `
-    <div class="glass rounded-xl p-5 border border-white/5">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+    <div class="glass rounded-xl p-4 border border-white/5">
+      <!-- Header: icon + name + framework descriptor -->
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
           <i class="fas ${modelIcons[key] || 'fa-brain'} ${colorClass}"></i>
         </div>
-        <div>
-          <div class="text-sm font-semibold text-gray-800">${modelNames[key] || key}</div>
-          <div class="text-xs text-gray-500">${modelDesc[key] || ''}</div>
+        <div class="min-w-0">
+          <div class="text-sm font-semibold text-gray-800 truncate">${modelNames[key] || key}</div>
+          <div class="text-[10px] text-gray-500 truncate" title="${modelDesc[key] || ''}">${modelDesc[key] || ''}</div>
         </div>
       </div>
-      <div class="grid grid-cols-5 gap-1.5 mb-3">
-        <div class="bg-gray-50 rounded-lg p-2 text-center">
-          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">F1</div>
-          <div class="text-sm font-mono font-bold ${colorClass}">${fmt(m.f1)}</div>
+
+      <!-- Performance metrics — vertical rows (AI Engine style) -->
+      <div class="space-y-1 text-xs mb-3">
+        <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+          <span class="text-gray-500 uppercase tracking-wide text-[10px]">F1</span>
+          <span class="font-mono font-bold ${colorClass}">${fmt(m.f1)}</span>
         </div>
-        <div class="bg-gray-50 rounded-lg p-2 text-center">
-          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">AUC</div>
-          <div class="text-sm font-mono font-bold text-gray-800">${fmt(m.auc)}</div>
+        <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+          <span class="text-gray-500 uppercase tracking-wide text-[10px]">AUC</span>
+          <span class="font-mono font-bold text-gray-800">${fmt(m.auc)}</span>
         </div>
-        <div class="bg-gray-50 rounded-lg p-2 text-center">
-          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">Prec</div>
-          <div class="text-sm font-mono font-bold text-gray-800">${fmt(m.precision)}</div>
+        <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+          <span class="text-gray-500 uppercase tracking-wide text-[10px]">Precision</span>
+          <span class="font-mono font-bold text-gray-800">${fmt(m.precision)}</span>
         </div>
-        <div class="bg-gray-50 rounded-lg p-2 text-center">
-          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">Recall</div>
-          <div class="text-sm font-mono font-bold text-gray-800">${fmt(m.recall)}</div>
+        <div class="flex justify-between items-center py-0.5 border-b border-gray-100">
+          <span class="text-gray-500 uppercase tracking-wide text-[10px]">Recall</span>
+          <span class="font-mono font-bold text-gray-800">${fmt(m.recall)}</span>
         </div>
-        <div class="bg-gray-50 rounded-lg p-2 text-center">
-          <div class="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wide">Acc</div>
-          <div class="text-sm font-mono font-bold text-gray-800">${fmt(m.accuracy)}</div>
+        <div class="flex justify-between items-center py-0.5">
+          <span class="text-gray-500 uppercase tracking-wide text-[10px]">Accuracy</span>
+          <span class="font-mono font-bold text-gray-800">${fmt(m.accuracy)}</span>
         </div>
       </div>
+
+      <!-- Confusion matrix — extra MLOps detail -->
+      <div class="bg-gray-50 rounded-lg p-2 mb-3">
+        <div class="text-[9px] text-gray-500 uppercase tracking-wide mb-1 text-center">Confusion Matrix (test set)</div>
+        <div class="grid grid-cols-4 gap-1 text-[10px] font-mono">
+          <div class="text-center">
+            <div class="text-green-600 font-bold">${tp}</div>
+            <div class="text-gray-400 text-[9px]">TP</div>
+          </div>
+          <div class="text-center">
+            <div class="text-red-500 font-bold">${fp}</div>
+            <div class="text-gray-400 text-[9px]">FP</div>
+          </div>
+          <div class="text-center">
+            <div class="text-orange-500 font-bold">${fn}</div>
+            <div class="text-gray-400 text-[9px]">FN</div>
+          </div>
+          <div class="text-center">
+            <div class="text-gray-700 font-bold">${tn}</div>
+            <div class="text-gray-400 text-[9px]">TN</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer: dataset + last trained -->
+      <div class="flex items-center justify-between text-[9px] text-gray-400 mb-2">
+        <span class="truncate" title="${dataset}"><i class="fas fa-database mr-1"></i>${dataset.replace('ULB Credit Card Fraud', 'ULB Real')}</span>
+        <span><i class="fas fa-clock mr-1"></i>${trained}</span>
+      </div>
+
+      <!-- Performance bar (F1) -->
       <div class="w-full bg-gray-200 rounded-full h-1.5">
         <div class="h-1.5 rounded-full bg-gradient-to-r from-accent to-purple-500" style="width:${(headlineMetric*100).toFixed(0)}%"></div>
       </div>
